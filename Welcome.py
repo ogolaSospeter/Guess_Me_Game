@@ -99,7 +99,6 @@ class GuessMeGame:
     def __init__(self):
         self.game_window = tk.Tk()
         self.game_window.title("Guess Me Game- Game Screen")
-        self.screen_info()  # Call screen_info method upon initialization
         self.questions_frame = None
         self.current_question_index = 0
         self.timer_label = None
@@ -150,15 +149,15 @@ class GuessMeGame:
         # The player Score
         self.player_score_label = ttk.Label(info_frame, padding=5, text="Player Score")
         self.player_score_label.grid(row=0, column=3)
-        self.player_score_button = ttk.Label(info_frame, background="green", foreground="white", padding=10, width=30, relief="raise", text="0")
+        self.player_score_button = ttk.Label(info_frame, background="green", foreground="white", padding=10, width=30, relief="raise", text=self.correct_answers)
         self.player_score_button.grid(row=1, column=3, padx=7)
 
     def game_play(self):
+        self.screen_info()  # Call screen_info method upon initialization
         self.questions_frame = ttk.Frame(self.game_window, padding=5)
         self.questions_frame.pack(fill="both", padx=5, pady=5, expand=1)
         self.timer_label = ttk.Label(self.questions_frame, text=f"Time left: {self.timer_seconds} seconds")
         self.timer_label.pack()
-
         self.canvas = tk.Canvas(self.questions_frame, width=100, height=100)
         self.canvas.pack()
         self.update_progress_bar()
@@ -184,13 +183,13 @@ class GuessMeGame:
             question_frame = ttk.Frame(self.questions_frame, padding=5)
             question_frame.pack(fill="both", padx=5, pady=5, expand=1)
             question_index = ttk.Label(question_frame, background="blue", foreground="white", text=f"Qn {self.current_question_index + 1}",width=20,padding=7)
-            question_index.grid(row=0, column=1, padx=5,columnspan=2)
-            question_labl = ttk.Label(question_frame, foreground="blue", text=f"Solve the following Arithmetic operation without using a calculator or any electronic device.",width=70,padding=7)
-            question_labl.grid(row=0, column=3, padx=5,columnspan=2)
+            question_index.grid(row=2, column=1, padx=5,rowspan=2)
+            question_labl = ttk.Label(question_frame, foreground="blue", text=f"Solve the following Arithmetic operation without using a calculator or any electronic device.",padding=7)
+            question_labl.grid(row=0, column=2, padx=5,columnspan=2)
             question_label = ttk.Label(question_frame, text=f"{self.qn}")
-            question_label.grid(row=1, column=2, padx=20)
+            question_label.grid(row=2, column=2, padx=20)
             answer_entry = ttk.Entry(question_frame)
-            answer_entry.grid(row=2, column=1, padx=5)
+            answer_entry.grid(row=3, column=2, padx=5)
             next_question_button = ttk.Button(question_frame, text="Next", command=lambda: self.process_answer(answer_entry.get()))
             next_question_button.grid(row=4, column=4, padx=50, pady=10)
         else:
@@ -199,8 +198,10 @@ class GuessMeGame:
     def solve_question(self, question):
         answer = 0
         operator = question.split(" ")[1]
-        num1 = int(question.split(" ")[0])
-        num2 = int(question.split(" ")[2])
+        num1 = question.split(" ")[0]
+        num2 = question.split(" ")[2]
+        num1 = int(num1)
+        num2 = int(num2)
         if operator == "+":
             answer = num1 + num2
         elif operator == "-":
@@ -224,20 +225,26 @@ class GuessMeGame:
             self.process_answer(None)
 
     def process_answer(self, user_answer):
-        answer = self.solve_question(self.qn)
-        if user_answer is not None or user_answer != "":
-            if user_answer == answer:
-                print("Your answer: ", user_answer)
-                print("Correct answer: ", answer)
+        correct_answer = int(self.solve_question(self.qn))
+        if user_answer is not None and user_answer != "":
+            user_answer = int(user_answer)
+            print("Your answer: ", user_answer)
+            print("Correct answer: ", correct_answer)
+            if user_answer == correct_answer:
                 self.correct_answers += 1
+        else:
+            print("Invalid input or no answer provided.")
+
         self.current_question_index += 1
         self.load_next_question()
+
 
     def display_results(self):
         self.timer_label.config(text="Test Ended")
 
         msgbox.showinfo("Test Results", f"Total Questions: {self.questions_attempted}\nCorrect Answers: {self.correct_answers}\nScore: {self.correct_answers * 10} points\nPercentage Pass Rate:{(self.correct_answers /self.attempts) * 100}%")
-        sg.popup("Test Results", f"Total Questions: {self.questions_attempted}\nCorrect Answers: {self.correct_answers}\nScore: {self.correct_answers * 10} points\nPercentage Pass Rate: {(self.correct_answers /self.attempts) * 100}%")
+        print(f"Total Questions: {self.questions_attempted}\nCorrect Answers: {self.correct_answers}\nScore: {self.correct_answers * 10} points\nPercentage Pass Rate: {(self.correct_answers /self.attempts) * 100}%")
+        # sg.popup("Test Results", f"Total Questions: {self.questions_attempted}\nCorrect Answers: {self.correct_answers}\nScore: {self.correct_answers * 10} points\nPercentage Pass Rate: {(self.correct_answers /self.attempts) * 100}%")
 
 
 game = GuessMeGame()
