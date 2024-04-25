@@ -238,14 +238,29 @@ class GuessMeGame:
         self.current_question_index += 1
         self.load_next_question()
 
-
     def display_results(self):
         self.timer_label.config(text="Test Ended")
 
-        msgbox.showinfo("Test Results", f"Total Questions: {self.questions_attempted}\nCorrect Answers: {self.correct_answers}\nScore: {self.correct_answers * 10} points\nPercentage Pass Rate:{(self.correct_answers /self.attempts) * 100}%")
+        msgbox.showinfo("Test Results", f"Total Questions: {self.questions_attempted}\nCorrect Answers: {self.correct_answers}\nScore: {self.correct_answers * 10} points\nPercentage Pass Rate: {self.correct_answers / self.attempts * 100:.2f}%")
         print(f"Total Questions: {self.questions_attempted}\nCorrect Answers: {self.correct_answers}\nScore: {self.correct_answers * 10} points\nPercentage Pass Rate: {(self.correct_answers /self.attempts) * 100}%")
+        self.confirm_restart()
         # sg.popup("Test Results", f"Total Questions: {self.questions_attempted}\nCorrect Answers: {self.correct_answers}\nScore: {self.correct_answers * 10} points\nPercentage Pass Rate: {(self.correct_answers /self.attempts) * 100}%")
 
+    def confirm_restart(self):
+        confirm = msgbox.askyesno("Confirm Restart", "Do you want to restart the game?")
+        if confirm:
+            self.game_window.destroy()
+            game = GuessMeGame()
+            game.game_window.mainloop()
+        else:
+            self.confirm_exit()
+
+    def confirm_exit(self):
+        confirm = msgbox.askyesno("Confirm Exit", "Do you want to exit the game?")
+        if confirm:
+            self.game_window.destroy()
+        else:
+            self.confirm_restart()
 
 game = GuessMeGame()
 game.game_window.mainloop()
