@@ -89,6 +89,11 @@ class WelcomeScreen:
         self.welcome_window.withdraw()  # Close the welcome window
         game = GuessMeGame()
         game.game_window.mainloop()
+import tkinter as tk
+from tkinter import ttk, messagebox as msgbox
+import datetime
+import random
+import turtle
 
 class GuessMeGame:
     def __init__(self):
@@ -102,8 +107,19 @@ class GuessMeGame:
         self.timer_running = False
         self.correct_answers = 0
         self.questions_attempted = 0
+        self.attempts = 0
 
-        self.game_play()
+        self.get_attempts()
+
+    def get_attempts(self):
+        self.attempts = sg.popup_get_text("Enter the number of attempts", "Attempts", default_text="5")
+        if self.attempts is None or self.attempts == "":
+            self.attempts = 5
+            return self.game_play()
+        else:
+            self.attempts = int(self.attempts)
+            return self.game_play()
+        
 
     def screen_info(self):
         info_frame = ttk.Frame(self.game_window, padding=10)
@@ -140,69 +156,111 @@ class GuessMeGame:
     def game_play(self):
         self.questions_frame = ttk.Frame(self.game_window, padding=5)
         self.questions_frame.pack(fill="both", padx=5, pady=5, expand=1)
-        self.timer_label = ttk.Label(self.questions_frame, text=f"{self.timer_seconds} seconds")
+        self.timer_label = ttk.Label(self.questions_frame, text=f"Time left: {self.timer_seconds} seconds")
         self.timer_label.pack()
 
-        self.progress_canvas = tk.Canvas(self.questions_frame, width=100, height=100)
-        self.progress_canvas.pack()
+        self.canvas = tk.Canvas(self.questions_frame, width=100, height=100)
+        self.canvas.pack()
         self.update_progress_bar()
 
         self.load_next_question()
 
     def update_progress_bar(self):
-        self.progress_canvas.delete("progress")
+        self.canvas.delete("progress")
         progress = 360 * (self.timer_seconds / 30)
-        self.progress_canvas.create_arc(5, 5, 95, 95, start=90, extent=-progress, style="arc", outline="green", width=4, tags="progress")
-
-    def clear_question_frame(self):
-        for widget in self.questions_frame.winfo_children():
-            widget.destroy()
+        self.canvas.create_arc(5, 5, 95, 95, start=90, extent=-progress, style="arc", outline="green", width=2, tags="progress")
 
     def load_next_question(self):
-        self.clear_question_frame()
-        if self.current_question_index < 10:
+        if self.current_question_index < self.attempts:
             self.timer_seconds = 30
             self.timer_running = True
             self.questions_attempted += 1
             self.timer_countdown()
             operators = ['+', '/', '*', '%', '-']
             operator = random.choice(operators)
-            num1 = random.randrange(10, 1000)
-            num2 = random.randrange(10, 1000)
-            qn = f"{num1} {operator} {num2}"
+            num1 = random.randrange(10, 100)
+            num2 = random.randrange(10, 100)
+            self.qn = f"{num1} {operator} {num2}"
             question_frame = ttk.Frame(self.questions_frame, padding=5)
             question_frame.pack(fill="both", padx=5, pady=5, expand=1)
-            question_index = ttk.Label(question_frame, background="blue", foreground="white", text=f"Qn {self.current_question_index + 1}")
-            question_index.grid(row=0, column=1, padx=5)
-            question_label = ttk.Label(question_frame, text=f"{qn}")
-            question_label.grid(row=1, column=1, padx=5)
+            question_index = ttk.Label(question_frame, background="blue", foreground="white", text=f"Qn {self.current_question_index + 1}",width=20,padding=7)
+            question_index.grid(row=0, column=1, padx=5,columnspan=2)
+            question_labl = ttk.Label(question_frame, foreground="blue", text=f"Solve the following Arithmetic operation without using a calculator or any electronic device.",width=70,padding=7)
+            question_labl.grid(row=0, column=3, padx=5,columnspan=2)
+            question_label = ttk.Label(question_frame, text=f"{self.qn}")
+            question_label.grid(row=1, column=2, padx=20)
             answer_entry = ttk.Entry(question_frame)
             answer_entry.grid(row=2, column=1, padx=5)
             next_question_button = ttk.Button(question_frame, text="Next", command=lambda: self.process_answer(answer_entry.get()))
-            next_question_button.grid(row=4, column=4, padx=10, pady=10)
+            next_question_button.grid(row=4, column=4, padx=50, pady=10)
         else:
             self.timer_running = False
             self.display_results()
+    def solve_question(self, question):
+        answer = 0
+        operator = question.split(" ")[1]
+        num1 = int(question.split(" ")[0])
+        num2 = int(question.split(" ")[2])
+        if operator == "+":
+            answer = num1 + num2
+        elif operator == "-":
+            answer = num1 - num2
+        elif operator == "*":
+            answer = num1 * num2
+        elif operator == "/":
+            answer = num1 / num2
+        elif operator == "%":
+            answer = num1 % num2
+        return answer
+    
 
     def timer_countdown(self):
         if self.timer_running and self.timer_seconds > 0:
-            self.update_progress_bar()  # Update progress bar first
-            self.timer_label.config(text=f"{self.timer_seconds} seconds")
+            self.timer_label.config(text=f"Time left: {self.timer_seconds} seconds")
             self.timer_seconds -= 1
+            self.update_progress_bar()
             self.timer_label.after(1000, self.timer_countdown)
         elif self.timer_running and self.timer_seconds == 0:
             self.process_answer(None)
 
-
     def process_answer(self, user_answer):
-        if user_answer is not None and eval(user_answer) == eval(f"{user_answer}"):
-            self.correct_answers += 1
+        answer = self.solve_question(self.qn)
+        if user_answer is not None or user_answer != "":
+            if user_answer == answer:
+                print("Your answer: ", user_answer)
+                print("Correct answer: ", answer)
+                self.correct_answers += 1
         self.current_question_index += 1
         self.load_next_question()
 
     def display_results(self):
         self.timer_label.config(text="Test Ended")
-        msgbox.showinfo("Test Results", f"Total Questions: {self.questions_attempted}\nCorrect Answers: {self.correct_answers}")
+
+        msgbox.showinfo("Test Results", f"Total Questions: {self.questions_attempted}\nCorrect Answers: {self.correct_answers}\nScore: {self.correct_answers * 10} points\nPercentage Pass Rate:{(self.correct_answers /self.attempts) * 100}%")
+        sg.popup("Test Results", f"Total Questions: {self.questions_attempted}\nCorrect Answers: {self.correct_answers}\nScore: {self.correct_answers * 10} points\nPercentage Pass Rate: {(self.correct_answers /self.attempts) * 100}%")
+
+
+game = GuessMeGame()
+game.game_window.mainloop()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     
 # class GuessMeGame:
