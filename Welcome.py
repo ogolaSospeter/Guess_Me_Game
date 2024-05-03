@@ -99,6 +99,11 @@ class GuessMeGame:
     def __init__(self):
         self.game_window = tk.Tk()
         self.game_window.title("Guess Me Game- Game Screen")
+        windowWidth = self.game_window.winfo_reqwidth()
+        windowHeight = self.game_window.winfo_reqheight()
+        positionRight = int((self.game_window.winfo_screenwidth()/2.6) - (windowWidth/1.6))
+        positionDown = int(self.game_window.winfo_screenheight()/2 - windowHeight/2)
+        self.game_window.geometry("+{}+{}".format(positionRight, positionDown))
         self.questions_frame = None
         self.current_question_index = 0
         self.timer_label = None
@@ -111,7 +116,7 @@ class GuessMeGame:
         self.get_attempts()
 
     def get_attempts(self):
-        self.attempts = sg.popup_get_text("Enter the number of attempts", "Attempts", default_text="5")
+        self.attempts = sg.popup_get_text("Enter the number of attempts", "Attempts", default_text="5",keep_on_top=True)
         if self.attempts is None or self.attempts == "":
             self.attempts = 5
             return self.game_play()
@@ -161,13 +166,12 @@ class GuessMeGame:
         self.canvas = tk.Canvas(self.questions_frame, width=100, height=100)
         self.canvas.pack()
         self.update_progress_bar()
-
         self.load_next_question()
 
     def update_progress_bar(self):
         self.canvas.delete("progress")
         progress = 360 * (self.timer_seconds / 30)
-        self.canvas.create_arc(5, 5, 95, 95, start=90, extent=-progress, style="arc", outline="green", width=2, tags="progress")
+        self.canvas.create_arc(5, 5, 95, 95, start=90, extent=-progress, style="arc", outline="green", width=4, tags="progress")
 
     def load_next_question(self):
         if self.current_question_index < self.attempts:
@@ -180,17 +184,19 @@ class GuessMeGame:
             num1 = random.randrange(10, 100)
             num2 = random.randrange(10, 100)
             self.qn = f"{num1} {operator} {num2}"
-            question_frame = ttk.Frame(self.questions_frame, padding=5)
-            question_frame.pack(fill="both", padx=5, pady=5, expand=1)
-            question_index = ttk.Label(question_frame, background="blue", foreground="white", text=f"Qn {self.current_question_index + 1}",width=20,padding=7)
+            self.question_frame = ttk.Frame(self.questions_frame, padding=5)
+            self.question_frame.pack(fill="both", padx=5, pady=5, expand=1)
+            question_index = ttk.Label(self.question_frame, background="blue", foreground="white", text=f"Qn {self.current_question_index + 1}",width=20,padding=7)
             question_index.grid(row=2, column=1, padx=5,rowspan=2)
-            question_labl = ttk.Label(question_frame, foreground="blue", text=f"Solve the following Arithmetic operation without using a calculator or any electronic device.",padding=7)
+            question_labl = ttk.Label(self.question_frame, foreground="blue", text=f"Solve the following Arithmetic operation without using a calculator or any electronic device.",padding=7)
             question_labl.grid(row=0, column=2, padx=5,columnspan=2)
-            question_label = ttk.Label(question_frame, text=f"{self.qn}")
+            question_label = ttk.Label(self.question_frame, text=f"{self.qn}")
             question_label.grid(row=2, column=2, padx=20)
-            answer_entry = ttk.Entry(question_frame)
+            question_counter = ttk.Label(self.question_frame,text=f"Qn {self.current_question_index + 1} of {self.attempts}")
+            question_counter.grid(row=0, column=4, padx=30,columnspan=2)
+            answer_entry = ttk.Entry(self.question_frame)
             answer_entry.grid(row=3, column=2, padx=5)
-            next_question_button = ttk.Button(question_frame, text="Next", command=lambda: self.process_answer(answer_entry.get()))
+            next_question_button = ttk.Button(self.question_frame, text="Next", command=lambda: self.process_answer(answer_entry.get()))
             next_question_button.grid(row=4, column=4, padx=50, pady=10)
         else:
             self.timer_running = False
@@ -233,9 +239,11 @@ class GuessMeGame:
             if user_answer == correct_answer:
                 self.correct_answers += 1
         else:
-            print("Invalid input or no answer provided.")
-
+            print("Your answer: ''")
+            print("Correct answer: ", correct_answer)
+        self.timer_seconds = 0
         self.current_question_index += 1
+        self.question_frame.destroy()
         self.load_next_question()
 
     def display_results(self):
@@ -348,18 +356,18 @@ game.game_window.mainloop()
 
 #         qn = f"{num1} {operator} {num2}"
 
-#         question_frame = ttk.Frame(self.questions_frame,padding=5)
-#         question_frame.pack(fill="both",padx=5,pady=5,expand=1)
-#         question_index = ttk.Label(question_frame,background="blue",foreground="white",text=f"Qn {n}")
+#         self.question_frame = ttk.Frame(self.questions_frame,padding=5)
+#         self.question_frame.pack(fill="both",padx=5,pady=5,expand=1)
+#         question_index = ttk.Label(self.question_frame,background="blue",foreground="white",text=f"Qn {n}")
 #         question_index.grid(row=0,column=1,padx=5)
 
-#         question_label = ttk.Label(question_frame,text=f"{qn}")
+#         question_label = ttk.Label(self.question_frame,text=f"{qn}")
 #         question_label.grid(row=1,column=1,padx=5)
 
-#         answer_entry = ttk.Entry(question_frame)
+#         answer_entry = ttk.Entry(self.question_frame)
 #         answer_entry.grid(row=2,column=1,padx=5)
 
-#         next_question_button = ttk.Button(question_frame,text="Next")
+#         next_question_button = ttk.Button(self.question_frame,text="Next")
 #         next_question_button.grid(row=4,column=4,padx=10, pady=10)
 
 
