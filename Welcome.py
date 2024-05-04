@@ -270,9 +270,16 @@ class GuessMeGame:
         else:
             self.confirm_restart()
 
-game = GuessMeGame()
-game.game_window.mainloop()
+def start_Window():
+    start_window = tk.Tk()
+    start_window.config(height=200,width=300)
+    start_window.geometry("300x200")
+    start_window.title("Welcome to the Guess Me Game.")
+    button = ttk.Button(start_window,text="Start",command= lambda: GuessMeGame.get_attempts)
+    button.grid(row=2,column=1,columnspan=2)
 
+
+start_Window()
 
 
 
